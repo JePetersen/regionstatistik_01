@@ -1,0 +1,72 @@
+---
+title: "Landstingen i siffror"
+output: html_notebook
+---
+
+##Aktivera programmen som anv?nds
+
+```{r}
+library(readxl)
+library(tidyverse)
+library(skimr)
+library(janitor)
+```
+
+
+##Indata
+
+```{r}
+library(readxl)
+strukturjusterad_kostnad_pp <- read_excel("/Users/ja-p 1/Dropbox/1_dropbox_polsek/landstingsstatistik/vis_export_strukturjusterad_kostnad_per_person.xlsx")
+
+clean_strukturjusterad_kostnad_pp <- strukturjusterad_kostnad_pp %>%
+  select("M?tperiod", "L?nskod", "Enhetsnamn", "V?rde") %>%
+  rename(landstingskod = "L?nskod", landsting = Enhetsnamn, hs_kostnad_pp = "V?rde")
+
+
+landstingsskatt <- read_excel("/Users/ja-p 1/Dropbox/1_dropbox_polsek/landstingsstatistik/Landstingsskattesats_SCB_2008_2018.xlsx", n_max = 21, 
+    skip = 2)
+View(landstingsskatt)
+
+long_landstingsskatt <- landstingsskatt %>%
+  gather("2008":"2018", key = "M?tperiod", value = "skatt_%")
+
+
+```
+
+
+##S?tt ihop dataset
+
+```{r}
+
+dt <- clean_strukturjusterad_kostnad_pp %>%
+  left_join(long_landstingsskatt, by = c("M?tperiod", "landstingskod")) %>%
+  select(-landsting.y) %>%
+  rename(landsting = "landsting.x")
+
+
+```
+
+##Hur ser sambandet ut mellan skatt och vad man spenderar? Och hur utvecklas HS-kostnaderna ?ver tid?
+
+```{r}
+filter(dt, landsting != "Gotland") %>%
+  ggplot(aes(x = `skatt_%`, y = hs_kostnad_pp)) + 
+  geom_point()
+
+filter(dt, landsting != "Gotland") %>%
+  ggplot(aes(x = M?tperiod, y = hs_kostnad_pp, group = landsting)) +
+  geom_line(aes(color=`skatt_%`))
+  
+ 
+
+```
+
+
+
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
