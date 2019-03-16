@@ -20,8 +20,8 @@ library(readxl)
 strukturjusterad_kostnad_pp <- read_excel("/Users/ja-p 1/Dropbox/1_dropbox_polsek/landstingsstatistik/vis_export_strukturjusterad_kostnad_per_person.xlsx")
 
 clean_strukturjusterad_kostnad_pp <- strukturjusterad_kostnad_pp %>%
-  select("M?tperiod", "L?nskod", "Enhetsnamn", "V?rde") %>%
-  rename(landstingskod = "L?nskod", landsting = Enhetsnamn, hs_kostnad_pp = "V?rde")
+  select("Mätperiod", "Länskod", "Enhetsnamn", "Värde") %>%
+  rename(landstingskod = "Länskod", landsting = Enhetsnamn, hs_kostnad_pp = "Värde")
 
 
 landstingsskatt <- read_excel("/Users/ja-p 1/Dropbox/1_dropbox_polsek/landstingsstatistik/Landstingsskattesats_SCB_2008_2018.xlsx", n_max = 21, 
