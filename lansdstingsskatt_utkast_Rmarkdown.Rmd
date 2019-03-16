@@ -10,6 +10,7 @@ library(readxl)
 library(tidyverse)
 library(skimr)
 library(janitor)
+library(lubridate)
 ```
 
 
@@ -17,33 +18,35 @@ library(janitor)
 
 ```{r}
 library(readxl)
-strukturjusterad_kostnad_pp <- read_excel("/Users/ja-p 1/Dropbox/1_dropbox_polsek/landstingsstatistik/vis_export_strukturjusterad_kostnad_per_person.xlsx")
+strukturjusterad_kostnad_pp <- read_excel("vis_export_strukturjusterad_kostnad_per_person.xlsx")
 
 clean_strukturjusterad_kostnad_pp <- strukturjusterad_kostnad_pp %>%
   select("Mätperiod", "Länskod", "Enhetsnamn", "Värde") %>%
   rename(landstingskod = "Länskod", landsting = Enhetsnamn, hs_kostnad_pp = "Värde")
 
 
-landstingsskatt <- read_excel("/Users/ja-p 1/Dropbox/1_dropbox_polsek/landstingsstatistik/Landstingsskattesats_SCB_2008_2018.xlsx", n_max = 21, 
+landstingsskatt <- read_excel("Landstingsskattesats_SCB_2008_2018.xlsx", n_max = 21, 
     skip = 2)
 View(landstingsskatt)
 
 long_landstingsskatt <- landstingsskatt %>%
-  gather("2008":"2018", key = "M?tperiod", value = "skatt_%")
+  gather("2008":"2018", key = "Mätperiod", value = "skatt_%")
 
 
 ```
 
 
-##S?tt ihop dataset
+##Sätt ihop dataset
 
 ```{r}
 
 dt <- clean_strukturjusterad_kostnad_pp %>%
-  left_join(long_landstingsskatt, by = c("M?tperiod", "landstingskod")) %>%
+  left_join(long_landstingsskatt, by = c("Mätperiod", "landstingskod")) %>%
   select(-landsting.y) %>%
   rename(landsting = "landsting.x")
 
+dt$Mätperiod <- make_date(dt$Mätperiod)
+dt$landsting <- as_factor(dt$landsting, ordered = FALSE)
 
 ```
 
@@ -55,10 +58,9 @@ filter(dt, landsting != "Gotland") %>%
   geom_point()
 
 filter(dt, landsting != "Gotland") %>%
-  ggplot(aes(x = M?tperiod, y = hs_kostnad_pp, group = landsting)) +
+  ggplot(aes(x = Mätperiod, y = hs_kostnad_pp, group = landsting)) +
   geom_line(aes(color=`skatt_%`))
   
- 
 
 ```
 
